@@ -1,0 +1,120 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- En-tête -->
+  <div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div class="mb-4 md:mb-0">
+        <h1 class="text-3xl font-bold text-gray-900">Galerie de Memes</h1>
+        <p class="text-gray-600 mt-2">Découvrez les meilleurs memes de la communauté</p>
+      </div>
+
+      <a
+        routerLink="/create-meme"
+        class="btn-primary inline-flex items-center"
+      >
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Créer un meme
+      </a>
+    </div>
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="mb-8">
+    <app-search-bar
+      (searchChanged)="onSearch($event)"
+      (tagsChanged)="onTagsChanged($event)"
+      class="block"
+    ></app-search-bar>
+  </div>
+
+  <!-- État de chargement initial -->
+  @if (isLoading && memes.length === 0) {
+    <div class="flex justify-center items-center py-12">
+      <app-spinner></app-spinner>
+      <span class="ml-3 text-gray-600">Chargement des memes...</span>
+    </div>
+  }
+
+  <!-- Message d'erreur -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-6">
+      {{ error }}
+      <button
+        (click)="loadMemes(true)"
+        class="ml-2 underline hover:no-underline"
+      >
+        Réessayer
+      </button>
+    </div>
+  }
+
+  <!-- Liste des memes -->
+  @if (memes.length > 0) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+      @for (meme of memes; track trackByMemeId($index, meme)) {
+        <app-meme-card
+          [meme]="meme"
+          (memeClicked)="onMemeClicked($event)"
+          (likeClicked)="onLikeClicked($event)"
+          class="block"
+        ></app-meme-card>
+      }
+    </div>
+
+    <!-- Bouton "Charger plus" -->
+    @if (hasMore) {
+      <div class="text-center">
+        <button
+          (click)="loadMore()"
+          [disabled]="isLoading"
+          class="btn-primary disabled:opacity-50"
+        >
+          @if (isLoading) {
+            <span class="inline-flex items-center">
+              <app-spinner class="mr-2" size="small"></app-spinner>
+              Chargement...
+            </span>
+          } @else {
+            Charger plus de memes
+          }
+        </button>
+      </div>
+    }
+
+    <!-- Info pagination -->
+    <div class="text-center text-gray-600 mt-4">
+      <p>{{ memes.length }} memes affichés</p>
+    </div>
+  }
+
+  <!-- État vide -->
+  @if (!isLoading && memes.length === 0 && !error) {
+    <div class="text-center py-12">
+      <div class="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+        <span class="text-4xl">🎭</span>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucun meme trouvé</h3>
+      <p class="text-gray-600 mb-6">
+        @if (searchTerm || selectedTags.length > 0) {
+          Aucun résultat pour vos critères de recherche.
+        } @else {
+          Soyez le premier à partager un meme !
+        }
+      </p>
+
+      @if (searchTerm || selectedTags.length > 0) {
+        <button
+          (click)="onSearch(''); onTagsChanged([])"
+          class="text-primary-600 hover:text-primary-700 font-medium"
+        >
+          Effacer les filtres
+        </button>
+      } @else {
+        <a routerLink="/create-meme" class="btn-primary">
+          Créer votre premier meme
+        </a>
+      }
+    </div>
+  }
+</div>
